@@ -36,6 +36,7 @@ MockHttpClient.prototype.request = function (request) {
     this._mapRequestToOutput =
       buildRequestToOutputMap(buildRequestOutputMappings(this._clientInfo));
   }
+  console.error('Request', request);
 
   // Closing a connection includes a requestID as a query parameter in the url
   // Example: http://fake504.snowflakecomputing.com/session?delete=true&requestId=a40454c6-c3bb-4824-b0f3-bae041d9d6a2
@@ -45,7 +46,19 @@ MockHttpClient.prototype.request = function (request) {
   }
 
   // get the output of the specified request from the map
-  const requestOutput = this._mapRequestToOutput[serializeRequest(request)];
+  let requestOutput = this._mapRequestToOutput[serializeRequest(request)];
+  if (!requestOutput) {
+    requestOutput = {
+      delay: 3000,
+      err: null,
+      response:
+            {
+              statusCode: 504,
+              statusMessage: 'ERROR',
+              body: {}
+            }
+    };
+  }
 
   Errors.assertInternal(Util.isObject(requestOutput),
     'no response available for: ' + serializeRequest(request));
@@ -91,7 +104,20 @@ MockHttpClient.prototype.requestAsync = function (request) {
   }
 
   // get the output of the specified request from the map
-  const requestOutput = this._mapRequestToOutput[serializeRequest(request)];
+  let requestOutput = this._mapRequestToOutput[serializeRequest(request)];
+
+  if (!requestOutput) {
+    requestOutput = {
+      delay: 3000,
+      err: null,
+      response:
+            {
+              statusCode: 504,
+              statusMessage: 'ERROR',
+              body: {}
+            }
+    };
+  }
 
   Errors.assertInternal(Util.isObject(requestOutput),
     'no response available for: ' + serializeRequest(request));

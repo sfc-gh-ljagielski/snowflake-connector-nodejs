@@ -25,6 +25,7 @@ const connectionOptionsExternalBrowser = mockConnectionOptions.authExternalBrows
 const connectionOptionsOkta = mockConnectionOptions.authOkta;
 const connectionOptionsFor504 = mockConnectionOptions.http504;
 const connectionOptionsTreatIntegerAsBigInt = mockConnectionOptions.treatIntAsBigInt;
+const connectionOptionsKeyPair = mockConnectionOptions.authKeyPair;
 
 describe('snowflake.createConnection() synchronous errors', function () {
   const testCases =
@@ -2010,6 +2011,36 @@ describe('snowflake.connect() with 504', function () {
    */
   it('retry 504', function (done) {
     const connection = snowflake.createConnection(connectionOptionsFor504);
+    async.series([
+      function (callback) {
+        connection.connect(function (err) {
+          assert.ok(!err, JSON.stringify(err));
+          callback();
+        });
+      },
+      function (callback) {
+        connection.destroy(function (err) {
+          assert.ok(!err, JSON.stringify(err));
+          callback();
+        });
+      }
+    ],
+    done);
+  });
+});
+
+describe('snowflake.connect() with keyPair retry', function () {
+  /*
+   * The connection is retired three times and get success.
+   */
+  it('retry 504', function (done) {
+    this.timeout(120000);
+    snowflake.configure(
+      {
+        logLevel: 'trace'
+      });
+    console.log("Configured")
+    const connection = snowflake.createConnection(connectionOptionsKeyPair);
     async.series([
       function (callback) {
         connection.connect(function (err) {
